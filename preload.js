@@ -14,6 +14,9 @@ contextBridge.exposeInMainWorld("cw", {
   },
   lan: {
     scan: (opts) => ipcRenderer.invoke("lan:scan", opts)
+  },
+  traffic: {
+    getPcTcpFlows: () => ipcRenderer.invoke("traffic:getPcTcpFlows")
   }
 });
 

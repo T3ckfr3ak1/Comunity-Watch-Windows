@@ -87,7 +87,11 @@
 
         <section class="card">
           <h2>Live view</h2>
-          <p class="muted">What the app is seeing right now. Bark events are highlighted in red.</p>
+          <p class="muted">
+            Live sockets and barks. Bark lines are red.
+            <strong>[PC-TCP]</strong> refreshes established TCP connections on <strong>this PC</strong>
+            (addresses and ports—not decrypted HTTPS payloads). LAN-wide capture would need mirrored traffic elsewhere.
+          </p>
           <div class="divider"></div>
           <div id="liveView" class="log live"></div>
         </section>

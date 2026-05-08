@@ -340,6 +340,14 @@ h1 {
   font-weight: 650;
 }
 
+.log.live .evt.web,
+.log.live .evt.tcp {
+  color: var(--teal);
+  font-weight: 500;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .kv {
   display: grid;
   gap: 10px;

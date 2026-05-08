@@ -80,6 +80,25 @@ async function init() {
   $("country").value = settings.optin?.coarseLocation?.country ?? "";
   $("region").value = settings.optin?.coarseLocation?.region ?? "";
 
+  let persistLocTimer = null;
+  async function persistCoarseLocation() {
+    settings.optin = settings.optin || {};
+    settings.optin.coarseLocation = {
+      country: $("country").value,
+      region: $("region").value
+    };
+    await window.cw.settings.set(settings);
+    $("settingsSummary").textContent = `mode=${settings.barkMode}, api=${settings.apiBaseUrl}`;
+  }
+  function schedulePersistCoarseLocation() {
+    clearTimeout(persistLocTimer);
+    persistLocTimer = setTimeout(() => persistCoarseLocation(), 380);
+  }
+  $("country").addEventListener("input", schedulePersistCoarseLocation);
+  $("region").addEventListener("input", schedulePersistCoarseLocation);
+  $("country").addEventListener("change", () => persistCoarseLocation());
+  $("region").addEventListener("change", () => persistCoarseLocation());
+
   function applyMode(mode) {
     const isOptin = mode === "optin";
     $("optinToggle").checked = isOptin;
@@ -90,7 +109,13 @@ async function init() {
 
   $("optinToggle").addEventListener("change", async () => {
     settings.barkMode = $("optinToggle").checked ? "optin" : "blind";
+    settings.optin = settings.optin || {};
+    settings.optin.coarseLocation = {
+      country: $("country").value,
+      region: $("region").value
+    };
     applyMode(settings.barkMode);
+    clearTimeout(persistLocTimer);
     await window.cw.settings.set(settings);
     $("settingsSummary").textContent = `mode=${settings.barkMode}, api=${settings.apiBaseUrl}`;
   });
@@ -102,6 +127,7 @@ async function init() {
       country: $("country").value,
       region: $("region").value
     };
+    clearTimeout(persistLocTimer);
     await window.cw.settings.set(settings);
     $("settingsSummary").textContent = `saved ${nowIso()}`;
     setLog({ ok: true, saved: settings });
@@ -123,15 +149,48 @@ async function init() {
       kind,
       payload
     });
-    if (liveEvents.length > 80) liveEvents.length = 80;
+    if (liveEvents.length > 150) liveEvents.length = 150;
     $("liveView").innerHTML = liveEvents
       .map((e) => {
-        const prefix = e.kind === "bark" ? "[BARK]" : `[${e.kind.toUpperCase()}]`;
-        const msg = typeof e.payload === "string" ? e.payload : JSON.stringify(e.payload);
-        const cls = e.kind === "bark" ? "evt bark" : "evt";
+        const prefix =
+          e.kind === "bark" ? "[BARK]" : e.kind === "tcp" ? "[PC-TCP]" : `[${e.kind.toUpperCase()}]`;
+        let msg =
+          typeof e.payload === "string" ? e.payload : JSON.stringify(e.payload);
+        if ((e.kind === "tcp" || e.kind === "web") && e.payload && typeof e.payload === "object") {
+          const p = /** @type {any} */ (e.payload);
+          if (p.lines && Array.isArray(p.lines))
+            msg = `${p.summary || ""}\n${p.lines.join("\n")}`;
+          else if (p.summary) msg = p.summary;
+        }
+        const cls =
+          e.kind === "bark" ? "evt bark" : e.kind === "tcp" ? "evt tcp" : "evt";
         return `<div class="${cls}">${escapeHtml(`${e.ts} ${prefix} ${msg}`)}</div>`;
       })
       .join("");
+  }
+
+  /** Established TCP on this PC (OS socket table; not payloads). */
+  async function pollPcTcpTraffic() {
+    const res = await window.cw.traffic.getPcTcpFlows();
+    if (!res || res.ok === false) {
+      pushLive("tcp", { summary: String(res?.error || "traffic unavailable"), lines: [] });
+      return;
+    }
+    const flows = res.flows || [];
+    if (flows.length === 0) {
+      pushLive("tcp", {
+        summary: "(this PC) 0 established TCP flows listed by the OS right now.",
+        lines: []
+      });
+      return;
+    }
+    const lines = flows.slice(0, 72).map((f) => {
+      const pn = f.proc || "?";
+      const pid = f.pid != null ? f.pid : "?";
+      return `${pn}:${pid}  ${f.local} → ${f.remote}`;
+    });
+    const capNote = flows.length >= 420 ? "+ (truncated)" : "";
+    pushLive("tcp", { summary: `this PC: ${flows.length} TCP flows ${capNote}`.trim(), lines });
   }
 
   $("testBtn").addEventListener("click", async () => {
@@ -206,6 +265,9 @@ async function init() {
   $("scanLanBtn").addEventListener("click", scanLan);
   scanLan();
   setInterval(scanLan, 30_000);
+
+  pollPcTcpTraffic();
+  setInterval(pollPcTcpTraffic, 3500);
 }
 
 init().catch((e) => {

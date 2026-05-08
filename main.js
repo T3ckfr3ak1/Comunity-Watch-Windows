@@ -4,7 +4,7 @@ const fs = require("fs");
 const { execFile } = require("child_process");
 const crypto = require("crypto");
 
-const APP_VERSION = "0.2.3";
+const APP_VERSION = "0.2.5";
 const SITE_URL = "https://comunitywatch.com";
 
 let mainWindow = null;
@@ -77,9 +77,25 @@ function defaultSettings() {
   };
 }
 
+function isPlainObject(v) {
+  return v != null && typeof v === "object" && !Array.isArray(v);
+}
+
+function deepMerge(base, patch) {
+  if (!isPlainObject(base)) return isPlainObject(patch) ? { ...patch } : patch;
+  if (!isPlainObject(patch)) return { ...base };
+  const out = { ...base };
+  for (const k of Object.keys(patch)) {
+    const pv = patch[k];
+    if (isPlainObject(pv) && isPlainObject(base[k])) out[k] = deepMerge(base[k], pv);
+    else out[k] = pv;
+  }
+  return out;
+}
+
 function loadSettings() {
   const fp = userDataPath(SETTINGS_FILE);
-  return { ...defaultSettings(), ...readJsonSafe(fp, {}) };
+  return deepMerge(defaultSettings(), readJsonSafe(fp, {}));
 }
 
 function saveSettings(next) {
@@ -344,6 +360,65 @@ if (-not $neighbors -or $neighbors.Count -eq 0) {
         macsExposed: false,
         note: "MAC addresses are never returned to the UI; deviceId is derived locally using a per-install salt."
       }
+    };
+  } catch (e) {
+    return { ok: false, error: String(e && e.message ? e.message : e) };
+  }
+});
+
+/** Established TCP on this PC (what the OS exposes). Not payload inspection; LAN-wide mirror is separate. */
+ipcMain.handle("traffic:getPcTcpFlows", async () => {
+  const psLines = [
+    "$ErrorActionPreference='SilentlyContinue'",
+    "$flows=@()",
+    "try {",
+    "  $procMap=@{}",
+    "  Get-Process -ErrorAction SilentlyContinue | ForEach-Object { $procMap[$_.Id]=$_.ProcessName }",
+    "  $conns = Get-NetTCPConnection -State Established -ErrorAction SilentlyContinue | Select-Object -First 650 LocalAddress,LocalPort,RemoteAddress,RemotePort,OwningProcess",
+    "  foreach ($c in $conns) {",
+    "    $ownId=$c.OwningProcess",
+    "    $pn=$null",
+    "    if ($null -ne $ownId -and $ownId -gt 0) { try { $pn=$procMap[[int]$ownId] } catch {} }",
+    "    $la=$c.LocalAddress; $ra=$c.RemoteAddress",
+    "    $pidOut=$null",
+    "    if ($null -ne $ownId -and $ownId -gt 0) { try { $pidOut=[int]$ownId } catch {} }",
+    "    $flows += [pscustomobject]@{ local=($la.ToString()+':'+[int]$c.LocalPort); remote=($ra.ToString()+':'+[int]$c.RemotePort); pid=$pidOut; proc=$pn }",
+    "  }",
+    "} catch {}",
+    "@{ ok=$true; at=(Get-Date).ToUniversalTime().ToString('o'); flows=$flows } | ConvertTo-Json -Depth 6 -Compress"
+  ];
+  const script = psLines.join("\n");
+
+  try {
+    const raw = await runPowerShellJson(script);
+    if (!raw || raw.ok === false) return raw || { ok: false, error: "traffic query failed" };
+
+    let flows = raw.flows;
+    if (!flows) flows = [];
+    if (!Array.isArray(flows)) flows = [flows];
+
+    const seen = new Set();
+    const deduped = [];
+    for (const f of flows) {
+      const local = f.local != null ? String(f.local) : "";
+      const remote = f.remote != null ? String(f.remote) : "";
+      const key = `${local}->${remote}`;
+      if (!local || seen.has(key)) continue;
+      seen.add(key);
+      deduped.push({
+        local,
+        remote,
+        pid: f.pid != null ? Number(f.pid) : null,
+        proc: f.proc != null ? String(f.proc) : null
+      });
+      if (deduped.length >= 420) break;
+    }
+
+    return {
+      ok: true,
+      at: raw.at,
+      flows: deduped,
+      scope: "This PC only: established TCP sockets the OS reports (no packet capture; HTTPS payloads not visible)."
     };
   } catch (e) {
     return { ok: false, error: String(e && e.message ? e.message : e) };
