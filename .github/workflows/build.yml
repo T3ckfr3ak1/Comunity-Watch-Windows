@@ -7,6 +7,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -14,10 +16,31 @@ jobs:
           node-version: 22
       - run: npm ci
       - run: npm run dist:nsis
+      - name: Compute version + paths
+        shell: pwsh
+        run: |
+          $ver = node -p "require('./package.json').version"
+          echo "VERSION=$ver" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $exe = Get-ChildItem -Recurse -File -Filter "CommunityWatch Setup $ver.exe" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $exe) { throw "Installer exe not found for version $ver" }
+          echo "INSTALLER_PATH=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          echo "INSTALLER_NAME=CommunityWatch-Setup-$ver.exe" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CommunityWatch-Installer
+          name: CommunityWatch-Installer-${{ env.VERSION }}
+          path: ${{ env.INSTALLER_PATH }}
+      - name: Publish GitHub Release (every push)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.sha }}
+          name: CommunityWatch build ${{ env.VERSION }} (${{ github.sha }})
+          draft: false
+          prerelease: true
+          files: ${{ env.INSTALLER_PATH }}
+      - name: Upload blockmap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CommunityWatch-Blockmap-${{ env.VERSION }}
           path: |
-            dist-eb/**/CommunityWatch Setup *.exe
             dist-eb/**/CommunityWatch Setup *.exe.blockmap

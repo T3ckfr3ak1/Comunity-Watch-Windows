@@ -308,6 +308,38 @@ h1 {
   line-height: 1.5;
 }
 
+.log.live {
+  min-height: 220px;
+}
+
+.log.live::selection {
+  background: rgba(0, 180, 204, 0.22);
+}
+
+/* Bark emphasis: simple high-contrast red for lines containing [BARK] */
+.log.live {
+  color: rgba(255, 255, 255, 0.84);
+}
+.log.live {
+  white-space: pre-wrap;
+}
+.log.live {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+.log.live {
+  --bark-red: #ff3b30;
+}
+.log.live .evt {
+  padding: 2px 0;
+}
+
+.log.live .evt.bark {
+  color: #ff3b30;
+  font-weight: 650;
+}
+
 .kv {
   display: grid;
   gap: 10px;

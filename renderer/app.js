@@ -31,13 +31,15 @@ function buildBlindPayload() {
   };
 }
 
-function buildOptinPayload(category, country, region) {
+function buildOptinPayload(country, region) {
   return {
     schema: "cw.bark.v1",
     mode: "optin",
     nonce: crypto.randomUUID(),
     sentAt: nowIso(),
-    category,
+    // Category is determined by the app's classifier; user does not pick it.
+    // For manual testing until the classifier is wired, we send "unknown".
+    category: "unknown",
     coarse_location: {
       country: String(country || "").trim().toUpperCase(),
       region: String(region || "").trim()
@@ -75,25 +77,6 @@ async function init() {
     await window.cw.app.openSite();
   });
 
-  const categories = bundled.categories || [
-    "ai_related",
-    "gov_foreign",
-    "gov_domestic",
-    "hacking_criminal",
-    "university_scanning",
-    "other",
-    "unknown"
-  ];
-  const sel = $("category");
-  sel.innerHTML = "";
-  for (const c of categories) {
-    const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
-    sel.appendChild(opt);
-  }
-
-  $("category").value = settings.optin?.category ?? "unknown";
   $("country").value = settings.optin?.coarseLocation?.country ?? "";
   $("region").value = settings.optin?.coarseLocation?.region ?? "";
 
@@ -115,7 +98,6 @@ async function init() {
   $("saveBtn").addEventListener("click", async () => {
     settings.apiBaseUrl = normalizeBaseUrl($("apiBaseUrl").value);
     settings.optin = settings.optin || {};
-    settings.optin.category = $("category").value;
     settings.optin.coarseLocation = {
       country: $("country").value,
       region: $("region").value
@@ -124,6 +106,33 @@ async function init() {
     $("settingsSummary").textContent = `saved ${nowIso()}`;
     setLog({ ok: true, saved: settings });
   });
+
+  const liveEvents = [];
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll("\"", "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function pushLive(kind, payload) {
+    liveEvents.unshift({
+      ts: new Date().toLocaleTimeString(),
+      kind,
+      payload
+    });
+    if (liveEvents.length > 80) liveEvents.length = 80;
+    $("liveView").innerHTML = liveEvents
+      .map((e) => {
+        const prefix = e.kind === "bark" ? "[BARK]" : `[${e.kind.toUpperCase()}]`;
+        const msg = typeof e.payload === "string" ? e.payload : JSON.stringify(e.payload);
+        const cls = e.kind === "bark" ? "evt bark" : "evt";
+        return `<div class="${cls}">${escapeHtml(`${e.ts} ${prefix} ${msg}`)}</div>`;
+      })
+      .join("");
+  }
 
   $("testBtn").addEventListener("click", async () => {
     const base = normalizeBaseUrl(settings.apiBaseUrl);
@@ -134,6 +143,7 @@ async function init() {
     setLog({ sendingTo: url, payload });
     const res = await postJson(url, payload);
     setLog({ sendingTo: url, payload, response: res });
+    pushLive("bark", { mode: "blind", sendingTo: url, status: res.status, ok: res.ok });
   });
 
   $("sendBtn").addEventListener("click", async () => {
@@ -146,21 +156,21 @@ async function init() {
       setLog({ sendingTo: url, payload });
       const res = await postJson(url, payload);
       setLog({ sendingTo: url, payload, response: res });
+      pushLive("bark", { mode: "blind", sendingTo: url, status: res.status, ok: res.ok });
       return;
     }
 
-    const category = $("category").value;
     const country = $("country").value;
     const region = $("region").value;
 
-    if (!category) return setLog({ ok: false, error: "Missing category" });
     if (!country) return setLog({ ok: false, error: "Missing coarse country" });
 
     const url = `${base}/api/bark/optin`;
-    const payload = buildOptinPayload(category, country, region);
+    const payload = buildOptinPayload(country, region);
     setLog({ sendingTo: url, payload });
     const res = await postJson(url, payload);
     setLog({ sendingTo: url, payload, response: res });
+    pushLive("bark", { mode: "optin", sendingTo: url, status: res.status, ok: res.ok, category: payload.category });
   });
 
   $("settingsSummary").textContent = `mode=${settings.barkMode}, api=${settings.apiBaseUrl}`;
@@ -190,6 +200,7 @@ async function init() {
     setLanStatus(`ok @ ${new Date().toLocaleTimeString()}`);
     $("lanSubnets").textContent = JSON.stringify(res.subnets || [], null, 2);
     $("lanDevices").textContent = JSON.stringify(res.devices || [], null, 2);
+    pushLive("lan", { active, devices: (res.devices || []).length });
   }
 
   $("scanLanBtn").addEventListener("click", scanLan);

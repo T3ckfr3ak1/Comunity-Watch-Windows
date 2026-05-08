@@ -54,10 +54,6 @@
           <div id="optinPanel" class="optinPanel">
             <div class="formGrid">
               <div>
-                <label class="label">Category</label>
-                <select id="category" class="input"></select>
-              </div>
-              <div>
                 <label class="label">Country (coarse)</label>
                 <input id="country" class="input" placeholder="US" spellcheck="false" />
               </div>
@@ -87,6 +83,13 @@
           <div class="divider"></div>
           <div class="logTitle">Result</div>
           <pre id="log" class="log"></pre>
+        </section>
+
+        <section class="card">
+          <h2>Live view</h2>
+          <p class="muted">What the app is seeing right now. Bark events are highlighted in red.</p>
+          <div class="divider"></div>
+          <div id="liveView" class="log live"></div>
         </section>
 
         <section class="card">

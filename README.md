@@ -3,8 +3,8 @@
 This repo contains the Windows desktop client.
 
 ### Download
-- Latest installer: `releases/CommunityWatch-Setup-latest.exe`
-- SHA256: `releases/CommunityWatch-Setup-latest.exe.sha256`
+- Latest installer (versioned): `releases/CommunityWatch-Setup-<version>.exe`
+- SHA256: `releases/CommunityWatch-Setup-<version>.exe.sha256`
 
 ### Privacy
 - LAN discovery runs locally.
