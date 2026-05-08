@@ -1,0 +1,16 @@
+﻿node_modules/
+
+# Local build outputs
+/dist*/
+/OLD/
+
+# Electron user data & logs should never be committed
+*.log
+*.log.*
+settings.json
+install_salt.txt
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.vscode/

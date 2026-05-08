@@ -1,0 +1,23 @@
+﻿name: windows-installer
+
+on:
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run dist:nsis
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CommunityWatch-Installer
+          path: |
+            dist-eb/**/CommunityWatch Setup *.exe
+            dist-eb/**/CommunityWatch Setup *.exe.blockmap

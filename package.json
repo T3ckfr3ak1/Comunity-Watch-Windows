@@ -1,0 +1,41 @@
+{
+  "name": "communitywatch-windows",
+  "version": "0.2.3",
+  "private": true,
+  "description": "CommunityWatch Windows client",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:nsis": "electron-builder --win nsis --config.directories.output=dist-eb --publish never",
+    "pack:win": "electron-packager . CommunityWatch --platform=win32 --arch=x64 --out=dist-packager --overwrite"
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.3.6",
+    "electron": "^36.9.5",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "com.communitywatch.windows",
+    "productName": "CommunityWatch",
+    "directories": {
+      "output": "dist-eb"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**",
+      "intel/**"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "build/installer.nsh"
+    }
+  }
+}
+

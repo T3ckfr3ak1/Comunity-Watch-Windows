@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CommunityWatch</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="header">
+        <div>
+          <div class="titleRow">
+            <h1>CommunityWatch</h1>
+            <span class="pill" id="versionPill">v?</span>
+          </div>
+          <p class="subtitle">
+            Default: blind anonymous bark. Opt-in: coarse location + exact category.
+          </p>
+          <div class="topActions">
+            <button id="openSiteBtn" class="btnLink">Open comunitywatch.com</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="card">
+          <h2>Bark settings</h2>
+
+          <div class="formRow">
+            <label class="label">API base URL</label>
+            <input id="apiBaseUrl" class="input" spellcheck="false" />
+            <button id="saveBtn" class="btn">Save</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="formRow">
+            <label class="label">Sharing</label>
+            <div class="switchRow">
+              <label class="switch">
+                <input id="optinToggle" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+              <div class="switchText">
+                <div class="switchTitle">Opt-in: include category + coarse location</div>
+                <div class="switchHint">
+                  Default is a blind bark (no location, no device info, no category).
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="optinPanel" class="optinPanel">
+            <div class="formGrid">
+              <div>
+                <label class="label">Category</label>
+                <select id="category" class="input"></select>
+              </div>
+              <div>
+                <label class="label">Country (coarse)</label>
+                <input id="country" class="input" placeholder="US" spellcheck="false" />
+              </div>
+              <div>
+                <label class="label">Region/state (coarse)</label>
+                <input id="region" class="input" placeholder="CA" spellcheck="false" />
+              </div>
+            </div>
+            <p class="hint">
+              Opt-in sends coarse location only (country/region), never precise location or device IDs.
+            </p>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Send a bark</h2>
+          <p class="muted">
+            This MVP includes manual bark sending to validate your privacy contract and backend wiring.
+            The on-device activity classifier + auto-barking hooks in next.
+          </p>
+
+          <div class="actions">
+            <button id="sendBtn" class="btn primary">Send bark now</button>
+            <button id="testBtn" class="btn">Test endpoint</button>
+          </div>
+
+          <div class="divider"></div>
+          <div class="logTitle">Result</div>
+          <pre id="log" class="log"></pre>
+        </section>
+
+        <section class="card">
+          <h2>Intel DB (self-updating)</h2>
+          <p class="muted">
+            The app ships with a small bundled ruleset and is designed to update it later from a trusted source.
+          </p>
+          <div class="kv">
+            <div class="kvRow">
+              <div class="kvKey">Bundled rules</div>
+              <div class="kvVal" id="intelSummary">…</div>
+            </div>
+            <div class="kvRow">
+              <div class="kvKey">Local settings</div>
+              <div class="kvVal" id="settingsSummary">…</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Network (LAN)</h2>
+          <p class="muted">
+            Discovers devices on the same local network (broadcast domain) as this PC. This is LAN-wide visibility
+            (not limited to just this computer), but it does not capture other devices’ traffic without router/AP support.
+          </p>
+          <div class="actions">
+            <button id="scanLanBtn" class="btn">Scan LAN</button>
+            <label class="inlineToggle">
+              <input id="activeScanToggle" type="checkbox" />
+              <span>Active scan</span>
+            </label>
+            <span class="pill" id="lanStatus">idle</span>
+          </div>
+          <div class="divider"></div>
+          <div class="lanGrid">
+            <div class="lanBox">
+              <div class="logTitle">Local interfaces</div>
+              <pre id="lanSubnets" class="log"></pre>
+            </div>
+            <div class="lanBox">
+              <div class="logTitle">Discovered devices</div>
+              <pre id="lanDevices" class="log"></pre>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+

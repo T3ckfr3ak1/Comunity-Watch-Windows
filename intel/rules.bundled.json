@@ -1,0 +1,23 @@
+{
+  "version": "bundled",
+  "categories": [
+    "ai_related",
+    "gov_foreign",
+    "gov_domestic",
+    "hacking_criminal",
+    "university_scanning",
+    "other",
+    "unknown"
+  ],
+  "rules": [
+    {
+      "id": "example-university-scanner",
+      "category": "university_scanning",
+      "match": {
+        "orgHintContains": ["university", "college", "research"]
+      },
+      "reasonCodes": ["ORG_HINT_RESEARCH"]
+    }
+  ]
+}
+
