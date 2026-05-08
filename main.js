@@ -4,7 +4,15 @@ const fs = require("fs");
 const { execFile } = require("child_process");
 const crypto = require("crypto");
 
-const APP_VERSION = "0.2.6";
+const APP_VERSION = "0.2.7";
+
+if (app.isPackaged && process.platform === "win32") {
+  for (const sw of ["inspect-brk", "inspect", "inspect-port", "remote-debugging-port", "expose-internals"]) {
+    try {
+      app.commandLine.removeSwitch(sw);
+    } catch {}
+  }
+}
 const SITE_URL = "https://comunitywatch.com";
 
 let mainWindow = null;
