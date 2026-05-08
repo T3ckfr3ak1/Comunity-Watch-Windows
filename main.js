@@ -4,7 +4,7 @@ const fs = require("fs");
 const { execFile } = require("child_process");
 const crypto = require("crypto");
 
-const APP_VERSION = "0.2.5";
+const APP_VERSION = "0.2.6";
 const SITE_URL = "https://comunitywatch.com";
 
 let mainWindow = null;
@@ -177,9 +177,28 @@ function createMainWindow() {
     minHeight: 640,
     backgroundColor: "#0a0f14",
     webPreferences: {
-      preload: path.join(__dirname, "preload.js")
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
     }
   });
+
+  if (app.isPackaged) {
+    win.webContents.on("before-input-event", (_e, input) => {
+      if (input.type !== "keyDown") return;
+      if (input.code === "F12") {
+        _e.preventDefault();
+        return;
+      }
+      if (input.control && input.shift && (input.code === "KeyI" || input.code === "KeyJ" || input.code === "KeyC")) {
+        _e.preventDefault();
+      }
+    });
+    win.webContents.on("devtools-opened", () => {
+      win.webContents.closeDevTools();
+    });
+  }
 
   win.loadFile(path.join(__dirname, "renderer", "index.html"));
   win.on("close", (e) => {
@@ -193,6 +212,9 @@ function createMainWindow() {
 }
 
 app.whenReady().then(() => {
+  if (app.isPackaged) {
+    Menu.setApplicationMenu(null);
+  }
   mainWindow = createMainWindow();
   ensureTray();
   app.on("activate", () => {

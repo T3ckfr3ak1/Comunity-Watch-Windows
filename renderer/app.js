@@ -134,6 +134,11 @@ async function init() {
   });
 
   const liveEvents = [];
+  const liveScrollWrap = /** @type {HTMLDivElement} */ ($("liveScrollWrap"));
+  const LIVE_BOTTOM_SLACK_PX = 28;
+  /** When true, append new lines scroll the feed to the newest entry (bottom). */
+  let liveStickToBottom = true;
+
   function escapeHtml(s) {
     return String(s)
       .replaceAll("&", "&amp;")
@@ -143,13 +148,29 @@ async function init() {
       .replaceAll("'", "&#39;");
   }
 
-  function pushLive(kind, payload) {
-    liveEvents.unshift({
-      ts: new Date().toLocaleTimeString(),
-      kind,
-      payload
+  function syncLiveStickFromScroll() {
+    const gap = liveScrollWrap.scrollHeight - liveScrollWrap.clientHeight - liveScrollWrap.scrollTop;
+    liveStickToBottom = gap <= LIVE_BOTTOM_SLACK_PX;
+  }
+
+  liveScrollWrap.addEventListener("scroll", syncLiveStickFromScroll, { passive: true });
+
+  if (typeof ResizeObserver !== "undefined") {
+    const ro = new ResizeObserver(() => {
+      if (!liveStickToBottom) return;
+      requestAnimationFrame(() => {
+        liveScrollWrap.scrollTop = liveScrollWrap.scrollHeight;
+      });
     });
-    if (liveEvents.length > 150) liveEvents.length = 150;
+    ro.observe(liveScrollWrap);
+  }
+
+  function scrollLiveIfPinned() {
+    if (!liveStickToBottom) return;
+    liveScrollWrap.scrollTop = liveScrollWrap.scrollHeight;
+  }
+
+  function refreshLiveDOM() {
     $("liveView").innerHTML = liveEvents
       .map((e) => {
         const prefix =
@@ -167,6 +188,19 @@ async function init() {
         return `<div class="${cls}">${escapeHtml(`${e.ts} ${prefix} ${msg}`)}</div>`;
       })
       .join("");
+    requestAnimationFrame(() => {
+      scrollLiveIfPinned();
+    });
+  }
+
+  function pushLive(kind, payload) {
+    liveEvents.push({
+      ts: new Date().toLocaleTimeString(),
+      kind,
+      payload
+    });
+    while (liveEvents.length > 150) liveEvents.shift();
+    refreshLiveDOM();
   }
 
   /** Established TCP on this PC (OS socket table; not payloads). */

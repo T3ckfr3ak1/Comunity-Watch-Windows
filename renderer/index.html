@@ -93,7 +93,12 @@
             (addresses and ports—not decrypted HTTPS payloads). LAN-wide capture would need mirrored traffic elsewhere.
           </p>
           <div class="divider"></div>
-          <div id="liveView" class="log live"></div>
+          <div id="liveScrollWrap" class="log live live-scroll-wrap" tabindex="-1">
+            <div id="liveView" class="live-view-inner"></div>
+          </div>
+          <p class="hint muted liveStickHint">
+            Scroll: pinned to newest at the bottom unless you scroll up; reach the bottom again to resume pinning.
+          </p>
         </section>
 
         <section class="card">

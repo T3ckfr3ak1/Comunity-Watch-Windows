@@ -312,6 +312,21 @@ h1 {
   min-height: 220px;
 }
 
+.liveStickHint {
+  margin-top: 8px;
+}
+
+/* Scroll container wraps inner feed (newest rows at bottom when pinned). */
+.log.live.live-scroll-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.live-scroll-wrap .live-view-inner {
+  flex: 1 1 auto;
+  min-height: min-content;
+}
+
 .log.live::selection {
   background: rgba(0, 180, 204, 0.22);
 }
