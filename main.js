@@ -89,10 +89,32 @@ function saveSettings(next) {
 }
 
 function getTrayIcon() {
+  // Windows tray is happiest with a real .ico.
+  const candidates = [
+    // packaged app
+    path.join(process.resourcesPath || "", "assets", "tray.ico"),
+    // dev / unpackaged
+    path.join(__dirname, "assets", "tray.ico"),
+    // fallback: square png
+    path.join(process.resourcesPath || "", "assets", "icon-square.png"),
+    path.join(__dirname, "assets", "icon-square.png")
+  ];
+
+  for (const p of candidates) {
+    try {
+      if (!p) continue;
+      if (!fs.existsSync(p)) continue;
+      const img = nativeImage.createFromPath(p);
+      if (!img.isEmpty()) return img;
+    } catch {}
+  }
+
+  // Last resort: attempt to derive something from the executable.
   try {
     const img = nativeImage.createFromPath(process.execPath);
     if (!img.isEmpty()) return img;
   } catch {}
+
   return nativeImage.createEmpty();
 }
 

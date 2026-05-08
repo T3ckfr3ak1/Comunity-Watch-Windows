@@ -12,7 +12,8 @@
   "devDependencies": {
     "@electron/packager": "^18.3.6",
     "electron": "^36.9.5",
-    "electron-builder": "^26.8.1"
+    "electron-builder": "^26.8.1",
+    "png-to-ico": "^3.0.1"
   },
   "build": {
     "appId": "com.communitywatch.windows",
@@ -24,7 +25,8 @@
       "main.js",
       "preload.js",
       "renderer/**",
-      "intel/**"
+      "intel/**",
+      "assets/**"
     ],
     "win": {
       "target": [
@@ -38,4 +40,3 @@
     }
   }
 }
-
