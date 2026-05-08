@@ -1,4 +1,4 @@
-﻿## CommunityWatch Windows
+## CommunityWatch Windows
 
 This repo contains the Windows desktop client.
 
@@ -11,6 +11,7 @@ This repo contains the Windows desktop client.
 - MAC addresses are never displayed in the UI and are not sent to any server.
 
 ### Build (developers)
+
 ```powershell
 npm install
 npm run dist:nsis
