@@ -1,12 +1,13 @@
 {
   "name": "communitywatch-windows",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "private": true,
   "description": "CommunityWatch Windows client",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist:nsis": "electron-builder --win nsis --config.directories.output=dist-eb --publish never",
+    "deps": "node scripts/npm-with-ca.cjs install --no-audit --no-fund",
+    "dist:nsis": "node scripts/build-nsis.cjs",
     "pack:win": "electron-packager . CommunityWatch --platform=win32 --arch=x64 --out=dist-packager --overwrite"
   },
   "devDependencies": {

@@ -12,7 +12,13 @@ This repo contains the Windows desktop client.
 
 ### Build (developers)
 
+Install dependencies (**use `npm run deps`** so TLS can pick up `.certs/npm-extra-ca.pem` if your proxy inspects HTTPS — see `scripts/TLS-README.txt`):
+
 ```powershell
-npm install
+npm run deps
 npm run dist:nsis
 ```
+
+`dist:nsis` stops **`CommunityWatch.exe`**, waits, clears **`dist-eb`** when possible; if **`app.asar` is locked**, it builds to **`dist-eb-<timestamp>`** automatically so installs still succeed.
+
+Direct `electron .` remains `npm start` after deps are installed.

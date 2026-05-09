@@ -1,5 +1,10 @@
 ﻿node_modules/
 
+# Optional org CA for npm TLS (never commit PEMs — use npm run deps)
+.certs/*.pem
+.certs/*.crt
+!.certs/.gitkeep
+
 # Local build outputs
 /dist*/
 /OLD/
