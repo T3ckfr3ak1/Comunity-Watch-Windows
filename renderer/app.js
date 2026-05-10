@@ -269,10 +269,8 @@ async function init() {
   $("settingsSummary").textContent = `mode=${settings.barkMode}, api=${settings.apiBaseUrl}`;
   setLog("Ready.");
 
-  // Defaults: active scan ON unless user explicitly turned it off.
-  const activeDefault =
-    settings?.lan?.activeScanDefault === false ? false : true;
-  $("activeScanToggle").checked = activeDefault;
+  // Passive by default; active probing only if user opted in (persistent).
+  $("activeScanToggle").checked = settings?.lan?.activeScanDefault === true;
 
   $("activeScanToggle").addEventListener("change", async () => {
     settings.lan = settings.lan || {};
@@ -297,8 +295,8 @@ async function init() {
   }
 
   $("scanLanBtn").addEventListener("click", scanLan);
+  // One passive refresh on open so the list isn’t empty without pings; no periodic scans (those alarm routers/AV).
   scanLan();
-  setInterval(scanLan, 30_000);
 
   pollPcTcpTraffic();
   setInterval(pollPcTcpTraffic, 3500);

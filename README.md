@@ -10,6 +10,9 @@ This repo contains the Windows desktop client.
 - LAN discovery runs locally.
 - MAC addresses are never displayed in the UI and are not sent to any server.
 
+### Home / shared Wi‑Fi
+By default the app uses **passive** LAN discovery only (no recurring probes). Optional **probe LAN** pings the subnet and may trigger notifications from some routers or antivirus products—it is off unless the user enables it.
+
 ### Build (developers)
 
 Install dependencies (**use `npm run deps`** so TLS can pick up `.certs/npm-extra-ca.pem` if your proxy inspects HTTPS — see `scripts/TLS-README.txt`):

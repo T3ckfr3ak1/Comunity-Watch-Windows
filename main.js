@@ -4,7 +4,7 @@ const fs = require("fs");
 const { execFile } = require("child_process");
 const crypto = require("crypto");
 
-const APP_VERSION = "0.2.8";
+const APP_VERSION = "0.2.9";
 
 if (app.isPackaged && process.platform === "win32") {
   for (const sw of ["inspect-brk", "inspect", "inspect-port", "remote-debugging-port", "expose-internals"]) {
@@ -76,7 +76,8 @@ function defaultSettings() {
       allowedCategories: "all"
     },
     lan: {
-      activeScanDefault: true
+      // Passive only by default: active ping sweeps look like “network scans” on home routers/AV.
+      activeScanDefault: false
     },
     intel: {
       rulesVersion: "bundled",

@@ -121,14 +121,18 @@
         <section class="card">
           <h2>Network (LAN)</h2>
           <p class="muted">
-            Discovers devices on the same local network (broadcast domain) as this PC. This is LAN-wide visibility
-            (not limited to just this computer), but it does not capture other devices’ traffic without router/AP support.
+            Shows nearby devices from what Windows already knows (ARP/neighbors)—same idea as opening your router’s
+            device list. It does <strong>not</strong> hack your network or read other devices’ traffic.
+          </p>
+          <p class="muted">
+            <strong>Optional “probe LAN”</strong> sends brief pings across your subnet so quiet devices show up.
+            Some routers or security apps label that as a scan—leave it off on shared or family Wi‑Fi unless you need it.
           </p>
           <div class="actions">
-            <button id="scanLanBtn" class="btn">Scan LAN</button>
+            <button id="scanLanBtn" class="btn">Refresh device list</button>
             <label class="inlineToggle">
               <input id="activeScanToggle" type="checkbox" />
-              <span>Active scan</span>
+              <span>Probe LAN (pings; may trigger router alerts)</span>
             </label>
             <span class="pill" id="lanStatus">idle</span>
           </div>
