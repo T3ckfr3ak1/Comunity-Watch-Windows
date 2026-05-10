@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 1,
+  "project": {
+    "name": "CommunityWatch Windows",
+    "description": "Electron desktop client for CommunityWatch (lane: Windows App/)",
+    "license": "Proprietary — see LICENSE",
+    "siteUrl": "https://comunitywatch.com"
+  },
+  "version": {
+    "packageJson": "package.json version field",
+    "mainProcess": "main.js APP_VERSION constant",
+    "instruction": "Bump both together on every release build."
+  },
+  "privacy": {
+    "macAddresses": "Never leave the app; LAN scan API returns anonymized deviceId (salted hash) plus IP.",
+    "defaultBark": "Blind — no location, no category, no device payload.",
+    "optIn": "Coarse country/region only; category from app classifier (no per-category UI)."
+  },
+  "lanDiscovery": {
+    "defaultMode": "Passive — ARP/neighbors only.",
+    "probeLan": "Optional ICMP sweep; off by default; may trigger home-router / AV alerts.",
+    "autoRefresh": "User-triggered refresh + one passive pass on open; no periodic background LAN polling."
+  },
+  "liveView": {
+    "pcTcp": "Established TCP on this PC only (OS socket table); not LAN-wide HTTPS decryption.",
+    "scrollBehavior": "Pinned to newest at bottom unless user scrolls up; returning to bottom re-enables pinning."
+  },
+  "updates": {
+    "manifestUrl": "https://comunitywatch.com/upload",
+    "contract": "GET returns application/json; body JSON with latestVersion|version|app_version and downloadUrl|installerUrl|url (GitHub asset URLs allowed).",
+    "startupCheck": "Packaged app checks ~2.8s after launch when settings.updates.checkOnStartup !== false.",
+    "devCheck": "Set env CW_UPDATE_CHECK_DEV=1 when running npm start to enable the same check."
+  },
+  "buildAndRelease": {
+    "dependencies": "npm run deps — optional TLS: .certs/npm-extra-ca.pem (see scripts/TLS-README.txt)",
+    "installer": "npm run dist:nsis",
+    "publicStorefrontRepo": "npm run release:public with PUBLIC_RELEASE_DIR=<clone of minimal public repo>; copies installer + SHA256 + README from scripts/public-release/README.md.template",
+    "doNotCommit": ["releases/", "dist-eb/", "dist-eb-*/", "node_modules/"],
+    "workflowDetails": "scripts/public-release/INSTRUCTIONS.txt"
+  },
+  "securityNotes": {
+    "electronWebPreferences": "contextIsolation true, nodeIntegration false, sandbox true",
+    "packaged": "Electron fuses via scripts/afterPack.cjs; menu stripped; devtools shortcuts blocked",
+    "downloadHosts": "Updater only fetches installers from allowlisted HTTPS hosts (see main.js isTrustedDownloadUrl)"
+  },
+  "intelRules": {
+    "bundledPath": "intel/rules.bundled.json",
+    "future": "Signed remote rules download — design notes in intel/README.md"
+  },
+  "cursorLanes": {
+    "note": "Parent monorepo may contain Website/ and other lanes; edits in this chat should stay under Windows App/ unless user asks otherwise."
+  }
+}
