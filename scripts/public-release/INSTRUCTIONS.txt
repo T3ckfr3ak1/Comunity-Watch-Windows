@@ -1,0 +1,36 @@
+Why the public repo used to show "everything"
+==============================================
+GitHub publishes every file that is committed to the repo. Your development repo
+had the whole Electron project + history pushed to the *public* remote, so
+clones downloaded the entire source tree.
+
+Goal: separate remotes / repos
+------------------------------
+PRIVATE repo (recommended):
+  • Full Windows App source, scripts, workflows, proprietary LICENSE, etc.
+
+PUBLIC repo (customers only):
+  • README.md — short download + verify + link to site (use the template copied by the sync script)
+  • releases/CommunityWatch-Setup-<version>.exe
+  • releases/CommunityWatch-Setup-<version>.exe.sha256
+  Nothing else unless you consciously add it.
+
+Concrete steps on GitHub
+------------------------
+1) Create a NEW empty public repo, e.g. "CommunityWatch-Windows-Releases".
+
+2) On your CURRENT repo (full source): GitHub Settings → Change visibility → Private.
+   (Or keep it public until you migrate; then privatize.)
+
+3) Clone ONLY the empty public repo to a folder next to your private clone, e.g.
+      C:\dev\releases\CommunityWatch-Windows-Releases
+
+4) After `npm run dist:nsis` in the PRIVATE repo:
+
+      set PUBLIC_RELEASE_DIR=C:\path\to\CommunityWatch-Windows-Releases
+      npm run release:public
+
+5) Inside the PUBLIC clone: git add, commit, push.
+
+Optional: automate public pushes from CI in the PRIVATE repo using a PAT
+scoped to push to the public repo only (narrow permissions).

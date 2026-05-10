@@ -9,6 +9,7 @@
     "start": "electron .",
     "deps": "node scripts/npm-with-ca.cjs install --no-audit --no-fund",
     "dist:nsis": "node scripts/build-nsis.cjs",
+    "release:public": "node scripts/sync-public-release.cjs",
     "pack:win": "electron-packager . CommunityWatch --platform=win32 --arch=x64 --out=dist-packager --overwrite"
   },
   "devDependencies": {

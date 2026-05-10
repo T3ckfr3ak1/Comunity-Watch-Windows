@@ -1,10 +1,22 @@
 ## CommunityWatch Windows
 
-This repo contains the Windows desktop client. **Source is proprietary** (see `LICENSE`); it is **not** open source. Third-party libraries keep their own licenses.
+This folder is the **full development tree** for the Electron client (`main.js`, `renderer/`, installers from `npm run dist:nsis`, etc.).  
 
-### Download
-- Latest installer (versioned): `releases/CommunityWatch-Setup-<version>.exe`
-- SHA256: `releases/CommunityWatch-Setup-<version>.exe.sha256`
+**Hosting policy:** Keep this codebase in a **private** Git repo. Maintain a **separate minimal public repo** that only receives the installer + customer README via:
+
+```powershell
+npm run dist:nsis
+$env:PUBLIC_RELEASE_DIR="C:\path\to\your-public-repo-clone"
+npm run release:public
+```
+
+Details: **`scripts/public-release/INSTRUCTIONS.txt`**.
+
+**License:** proprietary (see **`LICENSE`**); third-party deps keep their own licenses.
+
+### Download (within this dev repo — not for the public storefront repo)
+
+Historical / local artifacts may exist under **`releases/`**; production flow is `dist-eb` after a build, then **`release:public`** into the public clone.
 
 ### Privacy
 - LAN discovery runs locally.
