@@ -1,6 +1,6 @@
 ## CommunityWatch Windows
 
-This repo contains the Windows desktop client.
+This repo contains the Windows desktop client. **Source is proprietary** (see `LICENSE`); it is **not** open source. Third-party libraries keep their own licenses.
 
 ### Download
 - Latest installer (versioned): `releases/CommunityWatch-Setup-<version>.exe`
