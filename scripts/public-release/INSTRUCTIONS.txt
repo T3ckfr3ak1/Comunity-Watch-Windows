@@ -34,3 +34,9 @@ Concrete steps on GitHub
 
 Optional: automate public pushes from CI in the PRIVATE repo using a PAT
 scoped to push to the public repo only (narrow permissions).
+
+Purging leaked binaries from Git HISTORY
+----------------------------------------
+See scripts/public-release/PURGE-GIT-HISTORY.txt (removing tracked files stops future commits;
+historic clones still contain old blobs until you filter or start fresh).
+

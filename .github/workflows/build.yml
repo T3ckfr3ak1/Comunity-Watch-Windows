@@ -1,14 +1,17 @@
-﻿name: windows-installer
+﻿# Builds the Windows installer only when you choose (not on every push).
+# This avoids publishing a constant stream of prerelease assets on a public repo.
+# After moving the source repo private, you can re-enable push triggers if you want.
+
+name: windows-installer
 
 on:
-  push:
-    branches: [ "main", "master" ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,14 +33,6 @@ jobs:
         with:
           name: CommunityWatch-Installer-${{ env.VERSION }}
           path: ${{ env.INSTALLER_PATH }}
-      - name: Publish GitHub Release (every push)
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: build-${{ github.sha }}
-          name: CommunityWatch build ${{ env.VERSION }} (${{ github.sha }})
-          draft: false
-          prerelease: true
-          files: ${{ env.INSTALLER_PATH }}
       - name: Upload blockmap artifact
         uses: actions/upload-artifact@v4
         with:
