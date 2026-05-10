@@ -14,9 +14,9 @@ Details: **`scripts/public-release/INSTRUCTIONS.txt`**.
 
 **License:** proprietary (see **`LICENSE`**); third-party deps keep their own licenses.
 
-### Download (within this dev repo — not for the public storefront repo)
+### Installers in this repo
 
-Historical / local artifacts may exist under **`releases/`**; production flow is `dist-eb` after a build, then **`release:public`** into the public clone.
+Do not commit installers here. Build output lives under **`dist-eb`** (ignored by Git). Publish with **`npm run release:public`** into your minimal **public** clone — see **`scripts/public-release/INSTRUCTIONS.txt`**.
 
 ### Privacy
 - LAN discovery runs locally.

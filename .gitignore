@@ -9,10 +9,8 @@
 /dist*/
 /OLD/
 
-# Installers belong in Releases / your public storefront repo — not in Git history (size + optics).
-releases/*.exe
-releases/*.dmg
-releases/*.pkg
+# Installers + checksums belong in GitHub Releases or your minimal public repo — not in this dev repo.
+releases/
 
 # Electron user data & logs should never be committed
 *.log
