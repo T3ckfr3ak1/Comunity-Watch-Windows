@@ -13,19 +13,17 @@ This repo contains the Windows desktop client.
 ### Home / shared Wi‑Fi
 By default the app uses **passive** LAN discovery only (no recurring probes). Optional **probe LAN** pings the subnet and may trigger notifications from some routers or antivirus products—it is off unless the user enables it.
 
-### Update manifest (`https://comunitywatch.com/upload`)
+### Update manifest (production)
 
-Serve **JSON** (body starts with `{`) so packaged builds can compare versions at startup:
+The Windows client requests **`GET https://comunitywatch.com/upload`** (trailing slash redirects are fine). No client change is needed if nothing points at an HTML upload page for updates.
 
-```json
-{
-  "latestVersion": "0.3.1",
-  "downloadUrl": "https://comunitywatch.com/path/CommunityWatch-Setup-0.3.1.exe",
-  "notes": "Optional short release note."
-}
-```
+- **`GET /upload`** is **API-only**: **`200`**, **`Content-Type: application/json`**, body must be valid JSON starting with **`{`**. If parsing fails or status is not OK, the app **skips** the update prompt (startup is silent; **Check now** may say it could not read version info).
+- **Human upload UI** lives at **`/upload.html`** only—not `/upload`.
+- The worker may duplicate fields with the same values for compatibility: **`latestVersion`**, **`version`**, **`app_version`** (semver-ish **`x.y.z`**, from installer filename or GitHub tag); **`downloadUrl`**, **`installerUrl`**, **`url`** (direct GitHub **`browser_download_url`** is allowed); **`notes`**, **`changelog`**, **`message`** (optional release text).
+- **Caching:** **`Cache-Control: public, max-age=60`** on the manifest; backend resolution of “latest installer” may be cached (**~5 minutes**), so a new GitHub release can lag briefly—no Windows change required.
+- **Failure:** **`502`** with JSON **`error`** (and possibly no version)—client treats as **no usable update**.
 
-Supported aliases: `version` / `app_version`, `installerUrl` / `url`. Relative `downloadUrl` paths resolve against `https://comunitywatch.com`. HTTPS downloads are only accepted from **comunitywatch.com**, **GitHub**, **objects.githubusercontent.com**, or **\*.githubusercontent.com**.
+Relative `downloadUrl` paths resolve against `https://comunitywatch.com`. HTTPS installers are only downloaded from **comunitywatch.com**, **GitHub**, **objects.githubusercontent.com**, or **\*.githubusercontent.com**.
 
 Packaged apps check **~2.8s after launch** unless **Check for updates when the app starts** is turned off. For **`npm start`**, set **`CW_UPDATE_CHECK_DEV=1`** once if you need the same check in development.
 
