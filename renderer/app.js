@@ -269,6 +269,22 @@ async function init() {
   $("settingsSummary").textContent = `mode=${settings.barkMode}, api=${settings.apiBaseUrl}`;
   setLog("Ready.");
 
+  settings.updates = settings.updates || {};
+  $("updatesStartupToggle").checked = settings.updates.checkOnStartup !== false;
+  $("updatesStartupToggle").addEventListener("change", async () => {
+    settings.updates = settings.updates || {};
+    settings.updates.checkOnStartup = $("updatesStartupToggle").checked;
+    await window.cw.settings.set(settings);
+  });
+  $("checkUpdatesBtn").addEventListener("click", async () => {
+    $("checkUpdatesBtn").disabled = true;
+    try {
+      await window.cw.updates.checkNow();
+    } finally {
+      $("checkUpdatesBtn").disabled = false;
+    }
+  });
+
   // Passive by default; active probing only if user opted in (persistent).
   $("activeScanToggle").checked = settings?.lan?.activeScanDefault === true;
 

@@ -13,6 +13,22 @@ This repo contains the Windows desktop client.
 ### Home / shared Wi‑Fi
 By default the app uses **passive** LAN discovery only (no recurring probes). Optional **probe LAN** pings the subnet and may trigger notifications from some routers or antivirus products—it is off unless the user enables it.
 
+### Update manifest (`https://comunitywatch.com/upload`)
+
+Serve **JSON** (body starts with `{`) so packaged builds can compare versions at startup:
+
+```json
+{
+  "latestVersion": "0.3.1",
+  "downloadUrl": "https://comunitywatch.com/path/CommunityWatch-Setup-0.3.1.exe",
+  "notes": "Optional short release note."
+}
+```
+
+Supported aliases: `version` / `app_version`, `installerUrl` / `url`. Relative `downloadUrl` paths resolve against `https://comunitywatch.com`. HTTPS downloads are only accepted from **comunitywatch.com**, **GitHub**, **objects.githubusercontent.com**, or **\*.githubusercontent.com**.
+
+Packaged apps check **~2.8s after launch** unless **Check for updates when the app starts** is turned off. For **`npm start`**, set **`CW_UPDATE_CHECK_DEV=1`** once if you need the same check in development.
+
 ### Build (developers)
 
 Install dependencies (**use `npm run deps`** so TLS can pick up `.certs/npm-extra-ca.pem` if your proxy inspects HTTPS — see `scripts/TLS-README.txt`):

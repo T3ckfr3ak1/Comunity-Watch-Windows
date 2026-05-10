@@ -1,6 +1,6 @@
 {
   "name": "communitywatch-windows",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "private": true,
   "description": "CommunityWatch Windows client",
   "main": "main.js",

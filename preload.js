@@ -17,6 +17,9 @@ contextBridge.exposeInMainWorld("cw", {
   },
   traffic: {
     getPcTcpFlows: () => ipcRenderer.invoke("traffic:getPcTcpFlows")
+  },
+  updates: {
+    checkNow: () => ipcRenderer.invoke("updates:checkNow")
   }
 });
 

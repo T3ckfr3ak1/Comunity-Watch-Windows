@@ -1,10 +1,10 @@
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, shell } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, Menu, Tray, nativeImage, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const { execFile } = require("child_process");
 const crypto = require("crypto");
 
-const APP_VERSION = "0.2.9";
+const APP_VERSION = "0.3.0";
 
 if (app.isPackaged && process.platform === "win32") {
   for (const sw of ["inspect-brk", "inspect", "inspect-port", "remote-debugging-port", "expose-internals"]) {
@@ -14,6 +14,8 @@ if (app.isPackaged && process.platform === "win32") {
   }
 }
 const SITE_URL = "https://comunitywatch.com";
+/** Server JSON describing latest Windows build (see README “Update manifest”). */
+const UPDATE_MANIFEST_URL = `${SITE_URL}/upload`;
 
 let mainWindow = null;
 let tray = null;
@@ -82,8 +84,252 @@ function defaultSettings() {
     intel: {
       rulesVersion: "bundled",
       lastUpdateIso: ""
+    },
+    updates: {
+      checkOnStartup: true
     }
   };
+}
+
+function semverParts(v) {
+  const s = String(v || "")
+    .trim()
+    .replace(/^v/i, "");
+  const core = s.split(/[-+]/)[0] || "";
+  return core.split(".").map((x) => {
+    const n = parseInt(x, 10);
+    return Number.isFinite(n) ? n : 0;
+  });
+}
+
+/** True if a is strictly newer than b (numeric semver segments). */
+function semverGt(a, b) {
+  const pa = semverParts(a);
+  const pb = semverParts(b);
+  const len = Math.max(pa.length, pb.length, 3);
+  for (let i = 0; i < len; i++) {
+    const na = pa[i] ?? 0;
+    const nb = pb[i] ?? 0;
+    if (na > nb) return true;
+    if (na < nb) return false;
+  }
+  return false;
+}
+
+function isTrustedDownloadUrl(href) {
+  let u;
+  try {
+    u = new URL(href);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== "https:") return false;
+  const h = u.hostname.toLowerCase();
+  if (h === "comunitywatch.com" || h.endsWith(".comunitywatch.com")) return true;
+  if (h === "github.com" || h.endsWith(".github.com")) return true;
+  if (h === "objects.githubusercontent.com") return true;
+  if (h.endsWith(".githubusercontent.com")) return true;
+  return false;
+}
+
+function resolveDownloadUrl(manifestUrl, urlStr) {
+  const u = String(urlStr || "").trim();
+  if (!u) return "";
+  if (/^https?:\/\//i.test(u)) return u;
+  try {
+    const base = new URL(manifestUrl);
+    return new URL(u, base.origin).href;
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Parse JSON from /upload. Expected keys: latestVersion|version, downloadUrl|installerUrl|url, notes (optional).
+ */
+function parseUpdateManifest(text, manifestUrl) {
+  const raw = String(text || "").trim();
+  if (!raw || raw[0] !== "{") return null;
+  let obj;
+  try {
+    obj = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  const ver =
+    obj.latestVersion != null
+      ? String(obj.latestVersion).trim()
+      : obj.version != null
+        ? String(obj.version).trim()
+        : obj.app_version != null
+          ? String(obj.app_version).trim()
+          : "";
+  if (!ver || !semverParts(ver).length) return null;
+
+  const urlRaw =
+    obj.downloadUrl != null
+      ? obj.downloadUrl
+      : obj.installerUrl != null
+        ? obj.installerUrl
+        : typeof obj.url === "string"
+          ? obj.url
+          : "";
+  const downloadUrl = resolveDownloadUrl(manifestUrl, urlRaw);
+
+  const notes =
+    obj.notes != null
+      ? String(obj.notes)
+      : obj.changelog != null
+        ? String(obj.changelog)
+        : obj.message != null
+          ? String(obj.message)
+          : "";
+
+  return { version: ver, downloadUrl, notes };
+}
+
+async function fetchUpdateManifest() {
+  const res = await fetch(UPDATE_MANIFEST_URL, {
+    redirect: "follow",
+    headers: {
+      Accept: "application/json, text/plain;q=0.9,*/*;q=0.8",
+      "User-Agent": `CommunityWatch/${APP_VERSION} (Windows; Electron)`
+    }
+  });
+  if (!res.ok) return null;
+  const text = await res.text();
+  return parseUpdateManifest(text, UPDATE_MANIFEST_URL);
+}
+
+async function downloadInstallerToTemp(urlStr, versionTag) {
+  if (!isTrustedDownloadUrl(urlStr)) {
+    throw new Error("Update download URL is not from an allowed host (HTTPS only).");
+  }
+  const safeVer = String(versionTag || "latest").replace(/[^0-9a-z._-]/gi, "_");
+  const dest = path.join(app.getPath("temp"), `CommunityWatch-Setup-${safeVer}.exe`);
+  const res = await fetch(urlStr, {
+    redirect: "follow",
+    headers: { "User-Agent": `CommunityWatch/${APP_VERSION} (Windows)` }
+  });
+  if (!res.ok) throw new Error(`Download failed (${res.status})`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (buf.length < 4 || buf.readUInt16LE(0) !== 0x5a4d) {
+    throw new Error("Downloaded file does not look like a Windows installer (.exe).");
+  }
+  await fs.promises.writeFile(dest, buf);
+  return dest;
+}
+
+let updateDialogLock = false;
+
+async function offerDownloadAndInstall(latestVersion, downloadUrl, notes) {
+  if (updateDialogLock) return;
+  updateDialogLock = true;
+  try {
+    const detailLines = [
+      `You are running ${APP_VERSION}.`,
+      notes ? String(notes).slice(0, 800) : ""
+    ].filter(Boolean);
+    const win = BrowserWindow.getFocusedWindow() || mainWindow;
+    const choice = await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
+      type: "info",
+      title: "CommunityWatch update",
+      message: `Version ${latestVersion} is available.`,
+      detail: detailLines.join("\n\n"),
+      buttons: ["Download and install", "Not now"],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true
+    });
+    if (choice.response !== 0) return;
+
+    if (!downloadUrl) {
+      await shell.openExternal(SITE_URL);
+      return;
+    }
+
+    const dest = await downloadInstallerToTemp(downloadUrl, latestVersion);
+    const err = await shell.openPath(dest);
+    if (err) {
+      await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
+        type: "warning",
+        title: "CommunityWatch",
+        message: "Could not start the installer automatically.",
+        detail: err + "\n\nThe file was saved to:\n" + dest,
+        buttons: ["OK"]
+      });
+    }
+  } catch (e) {
+    const msg = e && e.message ? e.message : String(e);
+    const win = BrowserWindow.getFocusedWindow() || mainWindow;
+    await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
+      type: "error",
+      title: "Update failed",
+      message: "Could not download the update.",
+      detail: msg,
+      buttons: ["OK"]
+    });
+  } finally {
+    updateDialogLock = false;
+  }
+}
+
+/** Startup: quiet on errors; prompt only when a newer semver is published. */
+async function checkForUpdatesOnStartup() {
+  const settings = loadSettings();
+  if (settings.updates && settings.updates.checkOnStartup === false) return;
+  if (!app.isPackaged && process.env.CW_UPDATE_CHECK_DEV !== "1") return;
+  try {
+    const m = await fetchUpdateManifest();
+    if (!m || !semverGt(m.version, APP_VERSION)) return;
+    setTimeout(() => {
+      offerDownloadAndInstall(m.version, m.downloadUrl, m.notes).catch(() => {});
+    }, 2800);
+  } catch {
+    /* offline or bad payload */
+  }
+}
+
+/** User invoked: show outcome (errors, or already latest). */
+async function checkForUpdatesInteractive() {
+  try {
+    const m = await fetchUpdateManifest();
+    if (!m) {
+      const win = BrowserWindow.getFocusedWindow() || mainWindow;
+      await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
+        type: "warning",
+        title: "CommunityWatch",
+        message: "Could not check for updates.",
+        detail: `No valid version information was returned from\n${UPDATE_MANIFEST_URL}`,
+        buttons: ["OK"]
+      });
+      return { ok: false, error: "no_manifest" };
+    }
+    if (!semverGt(m.version, APP_VERSION)) {
+      const win = BrowserWindow.getFocusedWindow() || mainWindow;
+      await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
+        type: "info",
+        title: "CommunityWatch",
+        message: "You’re up to date.",
+        detail: `Current version: ${APP_VERSION}\nLatest reported: ${m.version}`,
+        buttons: ["OK"]
+      });
+      return { ok: true, upToDate: true, current: APP_VERSION, latest: m.version };
+    }
+    await offerDownloadAndInstall(m.version, m.downloadUrl, m.notes);
+    return { ok: true, offered: true, latest: m.version };
+  } catch (e) {
+    const msg = e && e.message ? e.message : String(e);
+    const win = BrowserWindow.getFocusedWindow() || mainWindow;
+    await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
+      type: "warning",
+      title: "CommunityWatch",
+      message: "Update check failed.",
+      detail: msg,
+      buttons: ["OK"]
+    });
+    return { ok: false, error: msg };
+  }
 }
 
 function isPlainObject(v) {
@@ -154,6 +400,12 @@ function buildTrayMenu() {
       }
     },
     { label: "Open comunitywatch.com", click: () => shell.openExternal(SITE_URL) },
+    {
+      label: "Check for updates...",
+      click: () => {
+        checkForUpdatesInteractive().catch(() => {});
+      }
+    },
     { type: "separator" },
     {
       label: "Quit",
@@ -226,6 +478,7 @@ app.whenReady().then(() => {
   }
   mainWindow = createMainWindow();
   ensureTray();
+  checkForUpdatesOnStartup();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) mainWindow = createMainWindow();
     else mainWindow?.show();
@@ -246,6 +499,8 @@ ipcMain.handle("intel:getBundledRules", async () => {
   const fp = path.join(__dirname, "intel", "rules.bundled.json");
   return readJsonSafe(fp, { version: "bundled", categories: [], rules: [] });
 });
+
+ipcMain.handle("updates:checkNow", async () => checkForUpdatesInteractive());
 
 function runPowerShellJson(script) {
   return new Promise((resolve, reject) => {
