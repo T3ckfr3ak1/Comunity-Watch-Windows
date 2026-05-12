@@ -1,17 +1,22 @@
 "use strict";
 
 /**
- * Copies a built NSIS installer + SHA256 + consumer README into a separate
- * directory (normally a clone of your minimal PUBLIC GitHub repo).
+ * Copies NSIS installer + SHA256 + consumer README into a PUBLIC repo clone,
+ * then resets that clone so ONLY those artifacts remain (plus .git).
  *
  * Usage (after npm run dist:nsis):
  *   set PUBLIC_RELEASE_DIR=C:\path\to\public-repo-clone
  *   npm run release:public
+ *
+ * If PUBLIC_RELEASE_DIR contains a .git directory, all other paths are deleted
+ * from the working tree, then the three artifacts are written, then
+ * `git add -A` is run so stray source never stays staged. See docs/DUAL-PUSH.md.
  */
 
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const { spawnSync } = require("child_process");
 
 const root = path.join(__dirname, "..");
 const templatePath = path.join(__dirname, "public-release", "README.md.template");
@@ -19,6 +24,45 @@ const templatePath = path.join(__dirname, "public-release", "README.md.template"
 function die(msg) {
   console.error("[release:public]", msg);
   process.exit(1);
+}
+
+function git(outRoot, args) {
+  return spawnSync("git", ["-C", outRoot, ...args], { encoding: "utf8", shell: false });
+}
+
+/** When target is a git clone: remove everything except .git, then caller re-writes allowlisted files. */
+function resetPublicCloneWorkingTree(outRoot) {
+  const gitDir = path.join(outRoot, ".git");
+  if (!fs.existsSync(gitDir)) {
+    console.info("[release:public] Target has no .git — not resetting tree (copy files only).");
+    return;
+  }
+  if (process.env.CW_PUBLIC_SKIP_RESET === "1") {
+    console.info("[release:public] CW_PUBLIC_SKIP_RESET=1 — not wiping public working tree.");
+    return;
+  }
+  for (const name of fs.readdirSync(outRoot)) {
+    if (name === ".git") continue;
+    fs.rmSync(path.join(outRoot, name), { recursive: true, force: true });
+  }
+  console.info("[release:public] Public clone working tree cleared (kept .git only).");
+}
+
+function stageAllInPublicClone(outRoot) {
+  const gitDir = path.join(outRoot, ".git");
+  if (!fs.existsSync(gitDir)) return;
+  if (process.env.CW_PUBLIC_SKIP_GIT_ADD === "1") {
+    console.info("[release:public] CW_PUBLIC_SKIP_GIT_ADD=1 — run git add yourself.");
+    return;
+  }
+  const add = git(outRoot, ["add", "-A"]);
+  if (add.status !== 0) {
+    console.warn("[release:public] git add -A failed:", add.stderr || add.stdout);
+    return;
+  }
+  console.info("[release:public] Ran: git add -A");
+  const st = git(outRoot, ["status", "--short"]);
+  if (st.stdout) console.info(st.stdout);
 }
 
 function findInstallerExe(version) {
@@ -66,6 +110,8 @@ function main() {
     );
   }
 
+  resetPublicCloneWorkingTree(outRoot);
+
   fs.mkdirSync(relDir, { recursive: true });
   const outName = `ComunityWatch-Setup-${version}.exe`;
   const destExe = path.join(relDir, outName);
@@ -73,11 +119,7 @@ function main() {
   fs.copyFileSync(srcExe, destExe);
   const hex = sha256File(destExe);
   const shaPath = `${destExe}.sha256`;
-  fs.writeFileSync(
-    shaPath,
-    `${hex}  ${outName}\n`,
-    "utf8"
-  );
+  fs.writeFileSync(shaPath, `${hex}  ${outName}\n`, "utf8");
 
   if (!fs.existsSync(templatePath)) die(`Missing template: ${templatePath}`);
   let tmpl = fs.readFileSync(templatePath, "utf8");
@@ -85,13 +127,16 @@ function main() {
 
   fs.writeFileSync(path.join(outRoot, "README.md"), tmpl, "utf8");
 
+  stageAllInPublicClone(outRoot);
+
   console.info("[release:public] Wrote:");
   console.info(" ", path.join(outRoot, "README.md"));
   console.info(" ", shaPath);
   console.info(" ", destExe);
   console.info("");
-  console.info("Next: cd \"" + outRoot + "\" && git status");
-  console.info("(commit and push ONLY this public repo)");
+  console.info("Next (public clone): git commit -m \"Release " + version + "\" && git push public main");
+  console.info("Next (private source): git push private main");
+  console.info("See docs/DUAL-PUSH.md");
 }
 
 main();

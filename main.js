@@ -4,7 +4,7 @@ const fs = require("fs");
 const { execFile } = require("child_process");
 const crypto = require("crypto");
 
-const APP_VERSION = "0.3.2";
+const APP_VERSION = "0.3.3";
 
 if (app.isPackaged && process.platform === "win32") {
   for (const sw of ["inspect-brk", "inspect", "inspect-port", "remote-debugging-port", "expose-internals"]) {

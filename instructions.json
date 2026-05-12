@@ -37,7 +37,8 @@
     "installer": "npm run dist:nsis",
     "publicStorefrontRepo": "npm run release:public with PUBLIC_RELEASE_DIR=<clone of minimal public repo>; copies installer + SHA256 + README from scripts/public-release/README.md.template",
     "doNotCommit": ["releases/", "dist-eb/", "dist-eb-*/", "node_modules/"],
-    "workflowDetails": "scripts/public-release/INSTRUCTIONS.txt"
+    "workflowDetails": "scripts/public-release/INSTRUCTIONS.txt",
+    "dualRemoteGuide": "docs/DUAL-PUSH.md"
   },
   "securityNotes": {
     "electronWebPreferences": "contextIsolation true, nodeIntegration false, sandbox true",

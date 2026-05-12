@@ -28,7 +28,11 @@ Concrete steps on GitHub
       set PUBLIC_RELEASE_DIR=C:\path\to\ComunityWatch-Windows-Releases
       npm run release:public
 
-5) Inside the PUBLIC clone: git add, commit, push.
+5) Inside the PUBLIC clone: `git commit` + `git push` (remote e.g. `public`).
+
+**Automated public wipe:** `npm run release:public` with `PUBLIC_RELEASE_DIR` set to the public **clone** deletes everything there except `.git`, then writes only `README.md` + `releases/*.exe` + `.sha256`, then runs `git add -A`. See **`docs/DUAL-PUSH.md`**.
+
+**Dual push helper:** `npm run push:dual -- -PublicClone "C:\path\to\public-clone"` (needs `private` / `public` remotes — same doc).
 
 Optional: automate public pushes from CI in the PRIVATE repo using a PAT
 scoped to push to the public repo only (narrow permissions).

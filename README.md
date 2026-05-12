@@ -10,7 +10,7 @@ $env:PUBLIC_RELEASE_DIR="C:\path\to\your-public-repo-clone"
 npm run release:public
 ```
 
-Details: **`scripts/public-release/INSTRUCTIONS.txt`**.
+Details: **`scripts/public-release/INSTRUCTIONS.txt`** and **`docs/DUAL-PUSH.md`** (private source vs public installer-only).
 
 **License:** proprietary (see **`LICENSE`**); third-party deps keep their own licenses.
 
