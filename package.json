@@ -1,16 +1,16 @@
 {
   "name": "communitywatch-windows",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "license": "UNLICENSED",
-  "description": "CommunityWatch™ Windows client",
+  "description": "ComunityWatch™ Windows client",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "deps": "node scripts/npm-with-ca.cjs install --no-audit --no-fund",
     "dist:nsis": "node scripts/build-nsis.cjs",
     "release:public": "node scripts/sync-public-release.cjs",
-    "pack:win": "electron-packager . CommunityWatch --platform=win32 --arch=x64 --out=dist-packager --overwrite"
+    "pack:win": "electron-packager . ComunityWatch --platform=win32 --arch=x64 --out=dist-packager --overwrite"
   },
   "devDependencies": {
     "@electron/fuses": "^2.1.1",
@@ -21,7 +21,7 @@
   },
   "build": {
     "appId": "com.communitywatch.windows",
-    "productName": "CommunityWatch",
+    "productName": "ComunityWatch",
     "compression": "maximum",
     "afterPack": "./scripts/afterPack.cjs",
     "directories": {

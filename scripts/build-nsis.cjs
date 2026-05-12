@@ -10,8 +10,13 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function killCommunityWatch() {
+function killComunityWatch() {
   if (process.platform !== "win32") return;
+  spawnSync("taskkill", ["/IM", "ComunityWatch.exe", "/F"], {
+    stdio: "ignore",
+    shell: true,
+    windowsHide: true
+  });
   spawnSync("taskkill", ["/IM", "CommunityWatch.exe", "/F"], {
     stdio: "ignore",
     shell: true,
@@ -46,7 +51,7 @@ async function main() {
   const defaultOut = "dist-eb";
   let outDir = defaultOut;
 
-  killCommunityWatch();
+  killComunityWatch();
   await sleep(1200);
 
   const distAbs = path.join(root, defaultOut);
@@ -56,7 +61,7 @@ async function main() {
       outDir = stampOutDir();
       console.warn(
         `[dist:nsis] Could not remove "${defaultOut}" (file in use?). Building to ./${outDir} instead.\n` +
-          "          Quit CommunityWatch / close folders under dist-eb, then delete stale output if you want.\n"
+          "          Quit ComunityWatch / close folders under dist-eb, then delete stale output if you want.\n"
       );
     }
   }

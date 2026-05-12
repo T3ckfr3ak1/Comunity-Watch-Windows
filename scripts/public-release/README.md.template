@@ -1,16 +1,16 @@
-# CommunityWatch™ (Windows)
+# ComunityWatch™ (Windows)
 
 Install the latest client for Windows.
 
 ## Download
 
-- **Installer:** [releases/CommunityWatch-Setup-{{VERSION}}.exe](releases/CommunityWatch-Setup-{{VERSION}}.exe)
-- **Integrity (SHA256):** [releases/CommunityWatch-Setup-{{VERSION}}.exe.sha256](releases/CommunityWatch-Setup-{{VERSION}}.exe.sha256)
+- **Installer:** [releases/ComunityWatch-Setup-{{VERSION}}.exe](releases/ComunityWatch-Setup-{{VERSION}}.exe)
+- **Integrity (SHA256):** [releases/ComunityWatch-Setup-{{VERSION}}.exe.sha256](releases/ComunityWatch-Setup-{{VERSION}}.exe.sha256)
 
 Verify after download (PowerShell):
 
 ```powershell
-Get-FileHash .\releases\CommunityWatch-Setup-{{VERSION}}.exe -Algorithm SHA256
+Get-FileHash .\releases\ComunityWatch-Setup-{{VERSION}}.exe -Algorithm SHA256
 ```
 
 Compare the hash to the value in the `.sha256` file.
@@ -21,4 +21,4 @@ Compare the hash to the value in the `.sha256` file.
 
 ## Source code
 
-CommunityWatch™ Windows is proprietary; this repository only hosts the signed/unsigned installer builds for convenience. Technical or partnership inquiries should go through the website.
+ComunityWatch™ Windows is proprietary; this repository only hosts the signed/unsigned installer builds for convenience. Technical or partnership inquiries should go through the website.

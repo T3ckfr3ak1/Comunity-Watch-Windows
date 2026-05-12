@@ -28,7 +28,7 @@ function findInstallerExe(version) {
     const abs = path.join(root, rel);
     if (!fs.existsSync(abs) || !fs.statSync(abs).isDirectory()) return;
     for (const name of fs.readdirSync(abs)) {
-      if (!/^CommunityWatch Setup .+\.exe$/i.test(name)) continue;
+      if (!/^ComunityWatch Setup .+\.exe$/i.test(name)) continue;
       if (name.includes("__uninstaller")) continue;
       hits.push(path.join(abs, name));
     }
@@ -40,7 +40,7 @@ function findInstallerExe(version) {
   }
 
   if (!hits.length) return null;
-  const exact = hits.find((p) => p.endsWith(`CommunityWatch Setup ${version}.exe`));
+  const exact = hits.find((p) => p.endsWith(`ComunityWatch Setup ${version}.exe`));
   const pick = exact || hits.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)[0];
   return pick;
 }
@@ -55,19 +55,19 @@ function main() {
   const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
   const version = pkg.version || die("package.json missing version");
 
-  const outRootRaw = process.env.PUBLIC_RELEASE_DIR || path.join(root, "..", "CommunityWatch-Windows-Public");
+  const outRootRaw = process.env.PUBLIC_RELEASE_DIR || path.join(root, "..", "ComunityWatch-Windows-Public");
   const outRoot = path.resolve(outRootRaw);
   const relDir = path.join(outRoot, "releases");
 
   const srcExe = findInstallerExe(version);
   if (!srcExe) {
     die(
-      `No "CommunityWatch Setup ${version}.exe" found under dist-eb or dist-eb-*. Run: npm run dist:nsis`
+      `No "ComunityWatch Setup ${version}.exe" found under dist-eb or dist-eb-*. Run: npm run dist:nsis`
     );
   }
 
   fs.mkdirSync(relDir, { recursive: true });
-  const outName = `CommunityWatch-Setup-${version}.exe`;
+  const outName = `ComunityWatch-Setup-${version}.exe`;
   const destExe = path.join(relDir, outName);
 
   fs.copyFileSync(srcExe, destExe);

@@ -1,4 +1,4 @@
-## CommunityWatch™ Windows
+## ComunityWatch™ Windows
 
 This folder is the **full development tree** for the Electron client (`main.js`, `renderer/`, installers from `npm run dist:nsis`, etc.).  
 
@@ -48,6 +48,6 @@ npm run deps
 npm run dist:nsis
 ```
 
-`dist:nsis` stops **`CommunityWatch.exe`**, waits, clears **`dist-eb`** when possible; if **`app.asar` is locked**, it builds to **`dist-eb-<timestamp>`** automatically so installs still succeed.
+`dist:nsis` stops **`ComunityWatch.exe`**, waits, clears **`dist-eb`** when possible; if **`app.asar` is locked**, it builds to **`dist-eb-<timestamp>`** automatically so installs still succeed.
 
 Direct `electron .` remains `npm start` after deps are installed.

@@ -11,13 +11,13 @@ PRIVATE repo (recommended):
 
 PUBLIC repo (customers only):
   • README.md — short download + verify + link to site (use the template copied by the sync script)
-  • releases/CommunityWatch-Setup-<version>.exe
-  • releases/CommunityWatch-Setup-<version>.exe.sha256
+  • releases/ComunityWatch-Setup-<version>.exe
+  • releases/ComunityWatch-Setup-<version>.exe.sha256
   Nothing else unless you consciously add it.
 
 Concrete steps on GitHub
 ------------------------
-1) Create a NEW empty public repo, e.g. "CommunityWatch-Windows-Releases".
+1) Create a NEW empty public repo, e.g. "ComunityWatch-Windows-Releases".
 
 2) On your CURRENT repo (full source): GitHub Settings → Change visibility → Private.
 
@@ -25,7 +25,7 @@ Concrete steps on GitHub
 
 4) After `npm run dist:nsis` in the PRIVATE repo:
 
-      set PUBLIC_RELEASE_DIR=C:\path\to\CommunityWatch-Windows-Releases
+      set PUBLIC_RELEASE_DIR=C:\path\to\ComunityWatch-Windows-Releases
       npm run release:public
 
 5) Inside the PUBLIC clone: git add, commit, push.

@@ -24,18 +24,18 @@ jobs:
         run: |
           $ver = node -p "require('./package.json').version"
           echo "VERSION=$ver" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          $exe = Get-ChildItem -Recurse -File -Filter "CommunityWatch Setup $ver.exe" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          $exe = Get-ChildItem -Recurse -File -Filter "ComunityWatch Setup $ver.exe" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
           if (-not $exe) { throw "Installer exe not found for version $ver" }
           echo "INSTALLER_PATH=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          echo "INSTALLER_NAME=CommunityWatch-Setup-$ver.exe" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          echo "INSTALLER_NAME=ComunityWatch-Setup-$ver.exe" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CommunityWatch-Installer-${{ env.VERSION }}
+          name: ComunityWatch-Installer-${{ env.VERSION }}
           path: ${{ env.INSTALLER_PATH }}
       - name: Upload blockmap artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CommunityWatch-Blockmap-${{ env.VERSION }}
+          name: ComunityWatch-Blockmap-${{ env.VERSION }}
           path: |
-            dist-eb/**/CommunityWatch Setup *.exe.blockmap
+            dist-eb/**/ComunityWatch Setup *.exe.blockmap

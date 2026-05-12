@@ -4,7 +4,7 @@ const fs = require("fs");
 const { execFile } = require("child_process");
 const crypto = require("crypto");
 
-const APP_VERSION = "0.3.1";
+const APP_VERSION = "0.3.2";
 
 if (app.isPackaged && process.platform === "win32") {
   for (const sw of ["inspect-brk", "inspect", "inspect-port", "remote-debugging-port", "expose-internals"]) {
@@ -193,7 +193,7 @@ async function fetchUpdateManifest() {
     redirect: "follow",
     headers: {
       Accept: "application/json, text/plain;q=0.9,*/*;q=0.8",
-      "User-Agent": `CommunityWatch/${APP_VERSION} (Windows; Electron)`
+      "User-Agent": `ComunityWatch/${APP_VERSION} (Windows; Electron)`
     }
   });
   if (!res.ok) return null;
@@ -206,10 +206,10 @@ async function downloadInstallerToTemp(urlStr, versionTag) {
     throw new Error("Update download URL is not from an allowed host (HTTPS only).");
   }
   const safeVer = String(versionTag || "latest").replace(/[^0-9a-z._-]/gi, "_");
-  const dest = path.join(app.getPath("temp"), `CommunityWatch-Setup-${safeVer}.exe`);
+  const dest = path.join(app.getPath("temp"), `ComunityWatch-Setup-${safeVer}.exe`);
   const res = await fetch(urlStr, {
     redirect: "follow",
-    headers: { "User-Agent": `CommunityWatch/${APP_VERSION} (Windows)` }
+    headers: { "User-Agent": `ComunityWatch/${APP_VERSION} (Windows)` }
   });
   if (!res.ok) throw new Error(`Download failed (${res.status})`);
   const buf = Buffer.from(await res.arrayBuffer());
@@ -233,7 +233,7 @@ async function offerDownloadAndInstall(latestVersion, downloadUrl, notes) {
     const win = BrowserWindow.getFocusedWindow() || mainWindow;
     const choice = await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
       type: "info",
-      title: "CommunityWatch™ update",
+      title: "ComunityWatch™ update",
       message: `Version ${latestVersion} is available.`,
       detail: detailLines.join("\n\n"),
       buttons: ["Download and install", "Not now"],
@@ -253,7 +253,7 @@ async function offerDownloadAndInstall(latestVersion, downloadUrl, notes) {
     if (err) {
       await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
         type: "warning",
-        title: "CommunityWatch™",
+        title: "ComunityWatch™",
         message: "Could not start the installer automatically.",
         detail: err + "\n\nThe file was saved to:\n" + dest,
         buttons: ["OK"]
@@ -264,7 +264,7 @@ async function offerDownloadAndInstall(latestVersion, downloadUrl, notes) {
     const win = BrowserWindow.getFocusedWindow() || mainWindow;
     await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
       type: "error",
-      title: "CommunityWatch™",
+      title: "ComunityWatch™",
       message: "Could not download the update.",
       detail: msg,
       buttons: ["OK"]
@@ -298,7 +298,7 @@ async function checkForUpdatesInteractive() {
       const win = BrowserWindow.getFocusedWindow() || mainWindow;
       await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
         type: "warning",
-        title: "CommunityWatch™",
+        title: "ComunityWatch™",
         message: "Could not check for updates.",
         detail: `No valid version information was returned from\n${UPDATE_MANIFEST_URL}`,
         buttons: ["OK"]
@@ -309,7 +309,7 @@ async function checkForUpdatesInteractive() {
       const win = BrowserWindow.getFocusedWindow() || mainWindow;
       await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
         type: "info",
-        title: "CommunityWatch™",
+        title: "ComunityWatch™",
         message: "You’re up to date.",
         detail: `Current version: ${APP_VERSION}\nLatest reported: ${m.version}`,
         buttons: ["OK"]
@@ -323,7 +323,7 @@ async function checkForUpdatesInteractive() {
     const win = BrowserWindow.getFocusedWindow() || mainWindow;
     await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
       type: "warning",
-      title: "CommunityWatch™",
+      title: "ComunityWatch™",
       message: "Update check failed.",
       detail: msg,
       buttons: ["OK"]
@@ -392,7 +392,7 @@ function getTrayIcon() {
 function buildTrayMenu() {
   return Menu.buildFromTemplate([
     {
-      label: "Show CommunityWatch™",
+      label: "Show ComunityWatch™",
       click: () => {
         if (!mainWindow) return;
         mainWindow.show();
@@ -420,7 +420,7 @@ function buildTrayMenu() {
 function ensureTray() {
   if (tray) return tray;
   tray = new Tray(getTrayIcon());
-  tray.setToolTip("CommunityWatch™");
+  tray.setToolTip("ComunityWatch™");
   tray.setContextMenu(buildTrayMenu());
   tray.on("double-click", () => {
     if (!mainWindow) return;
