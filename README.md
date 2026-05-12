@@ -1,4 +1,4 @@
-## CommunityWatch Windows
+## CommunityWatch™ Windows
 
 This folder is the **full development tree** for the Electron client (`main.js`, `renderer/`, installers from `npm run dist:nsis`, etc.).  
 

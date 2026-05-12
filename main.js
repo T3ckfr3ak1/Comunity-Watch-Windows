@@ -4,7 +4,7 @@ const fs = require("fs");
 const { execFile } = require("child_process");
 const crypto = require("crypto");
 
-const APP_VERSION = "0.3.0";
+const APP_VERSION = "0.3.1";
 
 if (app.isPackaged && process.platform === "win32") {
   for (const sw of ["inspect-brk", "inspect", "inspect-port", "remote-debugging-port", "expose-internals"]) {
@@ -233,7 +233,7 @@ async function offerDownloadAndInstall(latestVersion, downloadUrl, notes) {
     const win = BrowserWindow.getFocusedWindow() || mainWindow;
     const choice = await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
       type: "info",
-      title: "CommunityWatch update",
+      title: "CommunityWatch™ update",
       message: `Version ${latestVersion} is available.`,
       detail: detailLines.join("\n\n"),
       buttons: ["Download and install", "Not now"],
@@ -253,7 +253,7 @@ async function offerDownloadAndInstall(latestVersion, downloadUrl, notes) {
     if (err) {
       await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
         type: "warning",
-        title: "CommunityWatch",
+        title: "CommunityWatch™",
         message: "Could not start the installer automatically.",
         detail: err + "\n\nThe file was saved to:\n" + dest,
         buttons: ["OK"]
@@ -264,7 +264,7 @@ async function offerDownloadAndInstall(latestVersion, downloadUrl, notes) {
     const win = BrowserWindow.getFocusedWindow() || mainWindow;
     await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
       type: "error",
-      title: "Update failed",
+      title: "CommunityWatch™",
       message: "Could not download the update.",
       detail: msg,
       buttons: ["OK"]
@@ -298,7 +298,7 @@ async function checkForUpdatesInteractive() {
       const win = BrowserWindow.getFocusedWindow() || mainWindow;
       await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
         type: "warning",
-        title: "CommunityWatch",
+        title: "CommunityWatch™",
         message: "Could not check for updates.",
         detail: `No valid version information was returned from\n${UPDATE_MANIFEST_URL}`,
         buttons: ["OK"]
@@ -309,7 +309,7 @@ async function checkForUpdatesInteractive() {
       const win = BrowserWindow.getFocusedWindow() || mainWindow;
       await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
         type: "info",
-        title: "CommunityWatch",
+        title: "CommunityWatch™",
         message: "You’re up to date.",
         detail: `Current version: ${APP_VERSION}\nLatest reported: ${m.version}`,
         buttons: ["OK"]
@@ -323,7 +323,7 @@ async function checkForUpdatesInteractive() {
     const win = BrowserWindow.getFocusedWindow() || mainWindow;
     await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
       type: "warning",
-      title: "CommunityWatch",
+      title: "CommunityWatch™",
       message: "Update check failed.",
       detail: msg,
       buttons: ["OK"]
@@ -392,7 +392,7 @@ function getTrayIcon() {
 function buildTrayMenu() {
   return Menu.buildFromTemplate([
     {
-      label: "Show CommunityWatch",
+      label: "Show CommunityWatch™",
       click: () => {
         if (!mainWindow) return;
         mainWindow.show();
@@ -420,7 +420,7 @@ function buildTrayMenu() {
 function ensureTray() {
   if (tray) return tray;
   tray = new Tray(getTrayIcon());
-  tray.setToolTip("CommunityWatch");
+  tray.setToolTip("CommunityWatch™");
   tray.setContextMenu(buildTrayMenu());
   tray.on("double-click", () => {
     if (!mainWindow) return;

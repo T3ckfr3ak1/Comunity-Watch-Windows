@@ -1,4 +1,4 @@
-; CommunityWatch NSIS customizations
+; CommunityWatch™ NSIS customizations
 ; - Kill running app before install
 ; - Clean old app data that will be replaced, while preserving logs
 

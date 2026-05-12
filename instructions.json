@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "schemaVersion": 1,
   "project": {
-    "name": "CommunityWatch Windows",
-    "description": "Electron desktop client for CommunityWatch (lane: Windows App/)",
+    "name": "CommunityWatch™ Windows",
+    "description": "Electron desktop client for CommunityWatch™ (lane: Windows App/)",
     "license": "Proprietary — see LICENSE",
     "siteUrl": "https://comunitywatch.com"
   },
